@@ -1,0 +1,53 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+yolo_env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# Project specific
+runs/
+dataset/images/train/
+dataset/images/val/
+dataset/labels/train/
+dataset/labels/val/
+*.zip
+*.tar.gz
+
+# Logs
+*.log
+
+# Cache
+.cache/
+*.cache
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Large model files (keep best.pt only)
+runs/train/*/weights/last.pt
+runs/train/*/weights/*.onnx
+runs/train/*/weights/*.engine
+
+# Inference results
+runs/infer/

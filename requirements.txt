@@ -1,0 +1,10 @@
+ultralytics>=8.0.0
+torch>=2.0.0
+torchvision>=0.15.0
+numpy
+opencv-python
+tqdm
+
+# Note: install a CUDA-enabled torch build that matches your GPU and CUDA toolkit.
+# Example (on Linux, CUDA 11.8):
+# pip install --index-url https://download.pytorch.org/whl/cu118 torch torchvision --upgrade
