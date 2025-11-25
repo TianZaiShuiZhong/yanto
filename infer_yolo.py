@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
+#!/usr/bin/env python3
 """
-Inference script for YOLOv8 cigarette butt detection model.
+YOLOv8 香烟检测模型推理脚本。
 
-Usage examples:
-  # Detect on single image
+使用示例：
+  # 检测单张图片
   python infer_yolo.py --source dataset/images/test/001.jpg
   
-  # Detect on all test images
+  # 检测测试集所有图片
   python infer_yolo.py --source dataset/images/test/
   
-  # Detect on video
+  # 检测视频文件
   python infer_yolo.py --source video.mp4
   
-  # Detect on webcam (0 = default camera)
+  # 使用摄像头实时检测 (0 = 默认摄像头)
   python infer_yolo.py --source 0
   
-  # Use custom trained model
+  # 使用自定义训练模型
   python infer_yolo.py --source dataset/images/test/ --model runs/train/yolov8s-cigarette/weights/best.pt
 """
 import argparse
