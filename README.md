@@ -7,7 +7,7 @@
 > ```
 > yanto/
 > ├── README.md                      # 推理快速开始指南 
-> ├── infer_yolo.py                  # 推理脚本
+> ├── infer_yolo.py                  # .bt模型推理脚本
 > ├── dataset                        # 训练集
 > ├── train_yolo.py                  # 训练脚本（可选）
 > ├── data.yaml                      # 数据配置
@@ -15,9 +15,15 @@
 > ├── setup.py                       # 包安装配置 
 > ├── .gitignore                     # Git 忽略规则 
 > ├── dataset/images/test/           # 示例测试图片（可选）
-> └── runs/train/yolov8s-cigarette/
->     └── weights/
->         └── best.pt                # 模型权重 
+> ├── pt2onnx.py                     # 用于导出 .pt 到 .onnx 格式的辅助脚本
+> ├── test_onnx_infer.py             # 简单的 ONNX 运行时前向传播测试程序
+> ├── onnx_infer_images.py           # 使用 ONNX 进行批量推理
+> └── runs/
+>     ├── weights/
+>     |   ├── best.pt                # 训练得到的 PyTorch 权重
+>     |   └── best.onnx               # 导出的 ONNX 权重(由 `pt2onnx.py` / export 生成
+>     └── train/yolov8s-cigarette/
+>         └── weights/                # 训练过程中保存的权重目录
 > ```
 
 ## 系统要求
@@ -105,6 +111,7 @@ python infer_yolo.py --source dataset/images/test/ --save --save_txt --save_conf
 
 - `0: yanto` — 烟头
 
+
 ---
 
 ## 常见推理命令
@@ -169,3 +176,62 @@ python -c "import torch; print(torch.cuda.is_available())"
 ## 更多信息
 
 - 查看完整文档：`TECHNICAL_GUIDE.md`
+
+## 导出为 ONNX（补充）
+
+下面给出将 `runs\weights\best.pt` 导出为 ONNX 的方法与在 Windows PowerShell 下的详细命令。仓库中已包含辅助脚本 `pt2onnx.py`，可以直接使用。
+
+1) 在仓库根目录创建并激活虚拟环境：
+
+```powershell
+python -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+```
+
+2) 安装依赖（若 `onnx==1.16.0` 在你的 Python 版本上无法直接安装，ultralytics 会尝试安装兼容版本）：
+
+```powershell
+pip install -r requirements.txt
+pip install ultralytics onnx==1.16.0 onnxruntime onnxslim
+```
+
+3) 使用仓库脚本导出（推荐）或直接调用 `ultralytics` API：
+
+```powershell
+# 推荐（仓库自带脚本，支持指定输出路径与参数）
+python .\pt2onnx.py -i ".\runs\weights\best.pt" -o ".\runs\weights\best.onnx" --opset 12 --dynamic
+
+# 或直接使用 ultralytics API（Python 交互式或脚本）：
+python - <<'PY'
+from ultralytics import YOLO
+model = YOLO(r"runs\weights\best.pt")
+model.export(format='onnx', opset=12, dynamic=True)
+PY
+```
+
+导出成功后示例文件：`runs\weights\best.onnx`。
+
+提示：如果 pip 在安装 `onnx` 时尝试从源码编译失败，请尝试使用 Python 3.10/3.11 或直接使用 `ultralytics` 的 AutoUpdate（脚本运行时会自动安装兼容的 onnx/onnxruntime）。
+
+## 使用 ONNX 运行推理（补充）
+
+仓库中已包含两个用于测试和批量推理的脚本：
+- `test_onnx_infer.py`：用 `onnxruntime` 执行一次 dummy forward，验证模型可加载并检查输出形状。
+- `onnx_infer_images.py`：通过 `ultralytics.YOLO` 加载 ONNX 模型并对图片文件夹做批量推理，结果保存到 `runs/detect/predict`（或 `runs/infer`，取决于 ultralytics 版本）。
+
+示例 PowerShell 命令（在激活的虚拟环境中运行）：
+
+```powershell
+.venv\Scripts\Activate.ps1
+
+# 使用 ultralytics 脚本对图片文件夹推理并保存结果
+python .\onnx_infer_images.py -m .\runs\weights\best.onnx -s .\dataset\images\train --device cpu --imgsz 640 --conf 0.25
+
+# 快速验证 ONNX 模型（dummy 输入）
+python .\test_onnx_infer.py -m .\runs\weights\best.onnx --size 640
+```
+
+可选：若机器有 NVIDIA GPU 并且你已安装 `onnxruntime-gpu`，可在 `--device` 中指定 GPU 加速（或使用 `ultralytics` CLI 指定 `device=0`）。
+
+可视化：要查看 ONNX 模型结构，请使用 Netron（https://netron.app）并打开 `runs\weights\best.onnx`。
