@@ -64,7 +64,11 @@ python -m venv .venv
 .venv\Scripts\python.exe -c "import torch; print(f'CUDA available: {torch.cuda.is_available()}')"          #确认CUDA不可用：
 
 
+bt推理：
 .venv\Scripts\python.exe infer_yolo.py --source dataset/images/train/ --model runs/weights/best.pt --save --device cpu
+
+onnx推理：
+python .\onnx_infer_images.py -m .\runs\weights\best.onnx -s .\dataset\images\train --device cpu --imgsz 640 --conf 0.25
 ```
 
 ### 3. 推理
